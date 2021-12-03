@@ -35,6 +35,9 @@ class Server {
 
    private:
     int socketCreate(void);
+    int acceptConnection();
+    int receiveData(int clientSock);
+    int sendData(int clientSock);
     int bindCreateSocket(int sock);
 };
 
