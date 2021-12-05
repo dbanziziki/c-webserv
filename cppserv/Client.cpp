@@ -51,10 +51,12 @@ int Client::socketReceive(char *rsp, short rcvSize) {
 }
 
 void Client::runClient() {
-    std::cout << "Enter the message: ";
-    std::cin >> sendToServer;
-    socketSend((char *)sendToServer.data(), sendToServer.length());
-    readSize = socketReceive(serverReply, 200);
-    std::cout << "Message received: " << serverReply << std::endl;
-    close(sock);
+    while (true) {
+        std::cout << "Enter the message: ";
+        std::cin >> sendToServer;
+        socketSend((char *)sendToServer.data(), sendToServer.length());
+        readSize = socketReceive(serverReply, 200);
+        std::cout << "Message received: " << serverReply << std::endl;
+        // close(sock);
+    }
 }

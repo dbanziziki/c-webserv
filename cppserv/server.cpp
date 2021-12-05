@@ -6,9 +6,12 @@ Server::Server(int port, int max) : port(port) {
     if (sock < 0) {
         // handle error
     }
-    // fcntl(sock, F_SETFL, O_NONBLOCK);
+    fcntl(sock, F_SETFL, O_NONBLOCK);
     bindCreateSocket(sock);
+    FD_ZERO(&master);
+    FD_SET(sock, &master);
     listen(sock, max);
+    // fcntl(sock, F_SETFL, O_NONBLOCK);
 }
 
 Server::~Server() {}
@@ -33,23 +36,21 @@ int Server::bindCreateSocket(int sock) {
     return iRetVal;
 }
 
-int Server::acceptConnection() {
-    int clientSock = accept(sock, (struct sockaddr *)&client,
-                            (socklen_t *)&clientLen); /* blocks */
-    if (clientSock < 0) {
-        std::cout << "Accepte failed" << std::endl;
-        return -1;
-    }
-    std::cout << "Connection accepted" << std::endl;
-    return clientSock;
-}
-
 int Server::receiveData(int clientSock) {
     memset(clientRequest, 0, 200);
-    if (recv(clientSock, clientRequest, 200, 0) < 0) {
-        std::cout << "recv failed" << std::endl;
-        return -1;
+    int nbytes =  recv(clientSock, clientRequest, 200, 0);
+    if (nbytes <= 0) {
+        std::cout << "Nothing recieved" << std::endl;
+        close(clientSock);
+        return -2;
     }
+    std::string msg(clientRequest);
+    if (msg.find("sleep") != std::string::npos) {
+        std::cout << "sleeping request" << std::endl;
+        sleep(5);
+    }
+    sendData(clientSock);
+    std::cout << "Data sent" << std::endl;
     std::cout << clientRequest << std::endl;
     return 0;
 }
@@ -72,14 +73,27 @@ void Server::runServer(void) {
     while (true) {
         std::cout << "Waiting for incoming connections..." << std::endl
                   << std::endl;
-        clientSock = acceptConnection();
-        if (clientSock == -1) {
+        clientSock = accept(sock, (struct sockaddr *)&client,
+                            (socklen_t *)&clientLen); /* blocks */
+        if (clientSock < 0) {
+            std::cout << "Accepte failed" << std::endl;
             return;
         }
-        if (receiveData(clientSock) < 0) {
+        std::cout << "Connection accepted" << std::endl;
+        memset(clientRequest, 0, 200);
+        memset(serverResponse, 0, 200);
+
+        if (recv(clientSock, clientRequest, 200, 0) < 0) {
+            std::cout << "recv failed" << std::endl;
             return;
         }
-        if (sendData(clientSock) < 0) {
+        std::cout << clientRequest << std::endl;
+        strcpy(serverResponse,
+               "HTTP/1.1 200 OK\nContent-Type: "
+               "text/html; charset=UTF-8\nContent-Length: 21\n\n<h1>Hello "
+               "there!</h1>");
+        if (send(clientSock, serverResponse, strlen(serverResponse), 0) < 0) {
+            std::cout << "Send failed" << std::endl;
             return;
         }
         close(clientSock);

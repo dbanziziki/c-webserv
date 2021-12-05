@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <sys/select.h>
 
 #include <cstring>
 #include <iostream>
@@ -24,6 +25,7 @@ class Server {
     char clientRequest[200];
     char serverResponse[200];
     struct sockaddr_in client;
+    fd_set master;
     int clientLen;
 
    public:
@@ -35,7 +37,7 @@ class Server {
 
    private:
     int socketCreate(void);
-    int acceptConnection();
+    // int acceptConnection(int client);
     int receiveData(int clientSock);
     int sendData(int clientSock);
     int bindCreateSocket(int sock);
