@@ -2,6 +2,7 @@ client.dSYM/
 client2.dSYM/
 server.dSYM/
 web.dSYM/
+.vscode/
 
 client
 client2

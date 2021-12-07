@@ -90,7 +90,6 @@ int Server::sendResponse(int clientSock, char *request) {
 }
 
 int Server::handleConnection(int clientSock) {
-    std::ostringstream oss;
     int ret = 0;
     do {
         ret = recv(clientSock, clientRequest, 1024, 0);
@@ -114,7 +113,6 @@ int Server::handleConnection(int clientSock) {
             close_conn = true;
             break;
         }
-        oss.clear();
     } while (true);
     return 0;
 }
