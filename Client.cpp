@@ -23,29 +23,14 @@ int Client::socketConnect() {
 
 int Client::socketSend(char *rqst, short lenRqst) {
     int shortRetVal = -1;
-    struct timeval tv;
-    tv.tv_sec = 20;
-    tv.tv_usec = 0;
 
-    if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof(tv)) <
-        0) {
-        printf("Time out\n");
-        return -1;
-    }
     shortRetVal = send(sock, rqst, lenRqst, 0);
     return shortRetVal;
 }
 
 int Client::socketReceive(char *rsp, short rcvSize) {
     int shortRetVal = -1;
-    struct timeval tv;
-    tv.tv_usec = 0;
-    tv.tv_sec = 20;
-    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv)) <
-        0) {
-        printf("Time out\n");
-        return -1;
-    }
+
     shortRetVal = recv(sock, rsp, rcvSize, 0);
     return shortRetVal;
 }
@@ -55,8 +40,8 @@ void Client::runClient() {
         std::cout << "Enter the message: ";
         std::cin >> sendToServer;
         socketSend((char *)sendToServer.data(), sendToServer.length());
+        memset(serverReply, 0, 200);
         readSize = socketReceive(serverReply, 200);
         std::cout << "Message received: " << serverReply << std::endl;
-        // close(sock);
     }
 }

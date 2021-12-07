@@ -11,7 +11,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <sys/select.h>
 
 #include <cstring>
 #include <iostream>
@@ -22,11 +21,13 @@ class Server {
     int port;
     // std::string clientRequest;
     // std::string serverResponse;
-    char clientRequest[200];
-    char serverResponse[200];
+    char clientRequest[1024];
+    char serverResponse[1024];
     struct sockaddr_in client;
-    fd_set master;
     int clientLen;
+    fd_set master;
+    bool close_conn;
+    int maxSd;
 
    public:
     Server(/* args */) {}
@@ -37,9 +38,10 @@ class Server {
 
    private:
     int socketCreate(void);
-    // int acceptConnection(int client);
-    int receiveData(int clientSock);
-    int sendData(int clientSock);
+    int acceptConnection();
+    int onRequest();
+    int sendResponse(int clientSock, char *request);
+    int handleConnection(int clientSock);
     int bindCreateSocket(int sock);
 };
 
