@@ -1,6 +1,7 @@
 #include "server.hpp"
 
 #include <fstream>
+#include <map>
 #include <sstream>
 #include <streambuf>
 #include <vector>
@@ -54,12 +55,27 @@ int Server::acceptConnection() {
 
 int Server::sendResponse(int clientSock, char *request) {
     std::istringstream iss(request);
-
     std::vector<std::string> parsed((std::istream_iterator<std::string>(iss)),
                                     std::istream_iterator<std::string>());
+
+    std::map<std::string, std::string> rqst;
+    rqst["METHOD"] = parsed[0];
+    rqst["FILE"] = parsed[1];
+    rqst["HTTP-VERSION"] = parsed[2];
+    for (int i = 3; i < parsed.size(); i++) {
+        rqst[parsed[i]] = parsed[i + 1];
+        i++;
+    }
+    for (std::map<std::string, std::string>::iterator it = rqst.begin();
+         it != rqst.end(); ++it) {
+        std::cout << "RQST " << it->first << "-" << it->second << std::endl;
+    }
+    std::cout << request << std::endl;
     std::string content = "<h1>404 Not Found</h1>";
     int errorCode = 404;
     std::string page = "index.html";
+    std::string reason = " OK\n";
+
     if (parsed.size() >= 3 && parsed[0] == "GET") {
         page = parsed[1];
         if (page == "/") {
@@ -69,9 +85,8 @@ int Server::sendResponse(int clientSock, char *request) {
             page = "." + temp;
             std::cout << "The page is " << page << std::endl;
         }
-    } else {
-        page = "404.hmtl";
     }
+    if (page == "404.html") reason = " Not Found\n";
     std::ifstream f(page);
     if (f.good()) {
         std::string str((std::istreambuf_iterator<char>(f)),
@@ -81,7 +96,7 @@ int Server::sendResponse(int clientSock, char *request) {
     }
     f.close();
     std::ostringstream oss;
-    oss << "HTTP/1.1 " << errorCode << " OK\n";
+    oss << "HTTP/1.1 " << errorCode << reason;
     oss << "Content-Type: text/html; charset=UTF-8\n";
     oss << "Content-Length: " << content.size() << "\n\n";
     oss << content;

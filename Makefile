@@ -9,3 +9,5 @@ all: server.cpp main.cpp client_main.cpp Client.cpp
 fclean:
 	rm -rf $(SERVER).dSYM $(CLIENT).dSYM
 	rm -f $(CLIENT) $(SERVER)
+
+re: fclean all
