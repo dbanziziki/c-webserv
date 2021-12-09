@@ -1,11 +1,5 @@
 #include "server.hpp"
 
-#include <fstream>
-#include <map>
-#include <sstream>
-#include <streambuf>
-#include <vector>
-
 Server::Server(int port, int max) : port(port), close_conn(false) {
     clientLen = sizeof(struct sockaddr_in);
     sock = socketCreate();
@@ -58,36 +52,21 @@ int Server::sendResponse(int clientSock, char *request) {
     std::vector<std::string> parsed((std::istream_iterator<std::string>(iss)),
                                     std::istream_iterator<std::string>());
 
-    std::map<std::string, std::string> rqst;
-    rqst["METHOD"] = parsed[0];
-    rqst["FILE"] = parsed[1];
-    rqst["HTTP-VERSION"] = parsed[2];
-    for (int i = 3; i < parsed.size(); i++) {
-        rqst[parsed[i]] = parsed[i + 1];
-        i++;
-    }
-    for (std::map<std::string, std::string>::iterator it = rqst.begin();
-         it != rqst.end(); ++it) {
-        std::cout << "RQST " << it->first << "-" << it->second << std::endl;
-    }
-    std::cout << request << std::endl;
+    HttpRequest req(request);
+    struct stat info;
     std::string content = "<h1>404 Not Found</h1>";
     int errorCode = 404;
-    std::string page = "index.html";
     std::string reason = " OK\n";
 
-    if (parsed.size() >= 3 && parsed[0] == "GET") {
-        page = parsed[1];
-        if (page == "/") {
-            page = "index.html";
-        } else {
-            std::string temp = page;
-            page = "." + temp;
-            std::cout << "The page is " << page << std::endl;
-        }
-    }
-    if (page == "404.html") reason = " Not Found\n";
-    std::ifstream f(page);
+    // if (stat(req._file_name.c_str(), &info) != 0) {
+    //     std::cout << "Cannot acces\n" << std::endl;
+    // }
+    // if (info.st_mode & S_IFDIR) {
+    //     std::cout << "Requsted a directory" << std::endl;
+    //     page = "dir_error.html";
+    // }
+    std::cout << "The filename is: " << req._file_name << std::endl;
+    std::ifstream f("." + req._file_name);
     if (f.good()) {
         std::string str((std::istreambuf_iterator<char>(f)),
                         std::istreambuf_iterator<char>());

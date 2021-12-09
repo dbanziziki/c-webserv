@@ -9,11 +9,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 #include <cstring>
+#include <fstream>
 #include <iostream>
+#include <map>
+#include <sstream>
+#include <streambuf>
+#include <vector>
+
+#include "HttpRequest.hpp"
 
 class Server {
    private:
